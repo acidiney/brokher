@@ -1,9 +1,10 @@
+import { BrokherContract } from './contracts/BrokherContract'
 import { BrokherEnum } from './enums/BrokherEnum'
 
-export class Brokher {
-  static async setup (Brokher: BrokherEnum) {
-    const Contract = await import(`./contracts/${Brokher}`)
+interface BrokherContractResponse extends BrokherContract <any, any>{}
 
-    return new Contract()
-  }
+export async function setup (brokher: BrokherEnum) : Promise<BrokherContractResponse> {
+  const Contract = await import(`./contracts/${brokher}`)
+
+  return new Contract()
 }
