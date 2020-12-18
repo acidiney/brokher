@@ -14,7 +14,7 @@ var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
     var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
     __setModuleDefault(result, mod);
     return result;
 };
@@ -56,12 +56,18 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.setup = void 0;
-function setup(brokher) {
+var BrokherMapped_1 = require("./enums/BrokherMapped");
+function setup(brokherName) {
     return __awaiter(this, void 0, void 0, function () {
-        var Contract;
+        var brokher, Contract;
         return __generator(this, function (_a) {
             switch (_a.label) {
-                case 0: return [4 /*yield*/, Promise.resolve().then(function () { return __importStar(require("./contracts/" + brokher)); })];
+                case 0:
+                    brokher = Object.entries(BrokherMapped_1.BrokherMapper).filter(function (_a) {
+                        var key = _a[0];
+                        return key === brokherName;
+                    })[0][1];
+                    return [4 /*yield*/, Promise.resolve().then(function () { return __importStar(require("./contracts/" + brokher)); })];
                 case 1:
                     Contract = _a.sent();
                     return [2 /*return*/, new Contract()];
