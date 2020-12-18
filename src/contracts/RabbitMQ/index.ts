@@ -6,7 +6,7 @@ interface RabbitMQConfig {
   uri: string
 }
 
-export class RabbitMQ
+export default class RabbitMQ
 implements BrokherContract<RabbitMQConfig, Options.AssertExchange> {
   private channel!: Channel
   private connection!: Connection

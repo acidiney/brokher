@@ -1,5 +1,5 @@
 /* eslint-disable no-undef */
-import { RabbitMQ } from './index'
+import RabbitMQ from './index'
 
 let contract: any
 
