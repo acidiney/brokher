@@ -1,13 +1,13 @@
 import { Channel, connect, Connection, Options } from 'amqplib'
 
-import { BrokerContract } from '../BrokerContract'
+import { BrokherContract } from '../BrokherContract'
 
 interface RabbitMQConfig {
   uri: string
 }
 
 export class RabbitMQ
-implements BrokerContract<RabbitMQConfig, Options.AssertExchange> {
+implements BrokherContract<RabbitMQConfig, Options.AssertExchange> {
   private channel!: Channel
   private connection!: Connection
 
@@ -30,7 +30,7 @@ implements BrokerContract<RabbitMQConfig, Options.AssertExchange> {
 
   createChannel (channel = 'topic', options: Options.AssertExchange) {
     return this.connection.createChannel().then((ch) => {
-      console.log('[broker] - channel created!')
+      console.log('[Brokher] - channel created!')
 
       ch.assertExchange(this.exchange, channel, options)
 
@@ -53,7 +53,7 @@ implements BrokerContract<RabbitMQConfig, Options.AssertExchange> {
       .assertQueue('', { exclusive: true })
       .then(({ queue }) => {
         console.log(
-          '[broker] Waiting for bindings on %s. To exit press CTRL+C',
+          '[Brokher] Waiting for bindings on %s. To exit press CTRL+C',
           queue
         )
 

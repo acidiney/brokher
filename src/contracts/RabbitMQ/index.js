@@ -21,7 +21,7 @@ var RabbitMQ = /** @class */ (function () {
         var _this = this;
         if (channel === void 0) { channel = 'topic'; }
         return this.connection.createChannel().then(function (ch) {
-            console.log('[broker] - channel created!');
+            console.log('[Brokher] - channel created!');
             ch.assertExchange(_this.exchange, channel, options);
             _this.channel = ch;
             return _this;
@@ -36,7 +36,7 @@ var RabbitMQ = /** @class */ (function () {
             .assertQueue('', { exclusive: true })
             .then(function (_a) {
             var queue = _a.queue;
-            console.log('[broker] Waiting for bindings on %s. To exit press CTRL+C', queue);
+            console.log('[Brokher] Waiting for bindings on %s. To exit press CTRL+C', queue);
             var routingKey = "#." + listingKey + ".#";
             _this.channel.bindQueue(queue, _this.exchange, routingKey);
             console.log(' [x] Binded %s', routingKey);

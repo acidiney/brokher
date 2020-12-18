@@ -1,8 +1,8 @@
-import { BrokerEnum } from './enums/BrokerEnum'
+import { BrokherEnum } from './enums/BrokherEnum'
 
-export class Broker {
-  async setup (broker: BrokerEnum) {
-    const Contract = await import(`./contracts/${broker}`)
+export class Brokher {
+  async setup (Brokher: BrokherEnum) {
+    const Contract = await import(`./contracts/${Brokher}`)
 
     return new Contract()
   }

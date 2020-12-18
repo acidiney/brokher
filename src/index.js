@@ -55,16 +55,16 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Broker = void 0;
-var Broker = /** @class */ (function () {
-    function Broker() {
+exports.Brokher = void 0;
+var Brokher = /** @class */ (function () {
+    function Brokher() {
     }
-    Broker.prototype.setup = function (broker) {
+    Brokher.prototype.setup = function (Brokher) {
         return __awaiter(this, void 0, void 0, function () {
             var Contract;
             return __generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0: return [4 /*yield*/, Promise.resolve().then(function () { return __importStar(require("./contracts/" + broker)); })];
+                    case 0: return [4 /*yield*/, Promise.resolve().then(function () { return __importStar(require("./contracts/" + Brokher)); })];
                     case 1:
                         Contract = _a.sent();
                         return [2 /*return*/, new Contract()];
@@ -72,6 +72,6 @@ var Broker = /** @class */ (function () {
             });
         });
     };
-    return Broker;
+    return Brokher;
 }());
-exports.Broker = Broker;
+exports.Brokher = Brokher;
