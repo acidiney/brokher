@@ -1,6 +1,6 @@
 {
-  "name": "brooker",
-  "version": "1.0.0",
+  "name": "brokher",
+  "version": "0.0.1",
   "description": "A Wrapper for Message Brokers",
   "main": "index.js",
   "scripts": {
@@ -17,7 +17,7 @@
     "@types/amqplib": "^0.5.16",
     "@types/jest": "^26.0.19",
     "@typescript-eslint/eslint-plugin": "^4.10.0",
-    "@typescript-eslint/parser": "^4.10.0",
+    "@typescript-eslint/parser": "^4.10ckage/brooker/.0",
     "amqplib": "^0.6.0",
     "eslint": "^7.15.0",
     "eslint-config-standard": "^16.0.2",
