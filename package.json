@@ -1,8 +1,8 @@
 {
   "name": "brokher",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "A Wrapper for Message Brokhers",
-  "main": "src/index.js",
+  "main": "dist/index.js",
   "scripts": {
     "test": "jest",
     "tsc": "tsc"
