@@ -7,8 +7,11 @@
     "test": "jest",
     "tsc": "tsc"
   },
-  "keywords": [],
-  "author": "Acidiney Dias <acidiney.dias@ideiasdinamicas.com>",
+  "keywords": [
+    "message-broker",
+    "rabbitmq"
+  ],
+  "author": "Acidiney Dias <acidineydias@gmail.com>",
   "license": "MIT",
   "devDependencies": {
     "@types/amqplib": "^0.5.16",
