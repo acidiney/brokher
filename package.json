@@ -1,5 +1,5 @@
 {
-  "name": "broker",
+  "name": "brooker",
   "version": "1.0.0",
   "description": "A Wrapper for Message Brokers",
   "main": "index.js",
