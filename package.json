@@ -1,6 +1,6 @@
 {
   "name": "brokher",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "description": "A Wrapper for Message Brokhers",
   "main": "dist/index.js",
   "scripts": {
