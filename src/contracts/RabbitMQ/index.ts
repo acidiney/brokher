@@ -22,6 +22,10 @@ implements BrokherContract<RabbitMQConfig, Options.AssertExchange> {
     })
   }
 
+  static init () {
+    return new RabbitMQ()
+  }
+
   setExchange (exchange: string) {
     this.exchange = exchange
 

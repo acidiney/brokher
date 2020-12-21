@@ -4,7 +4,7 @@ import RabbitMQ from './index'
 let contract: any
 
 beforeEach(() => {
-  contract = new RabbitMQ()
+  contract = RabbitMQ.init()
 })
 
 describe('RabbitMQ Contract', () => {

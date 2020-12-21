@@ -7,4 +7,5 @@ export interface BrokherContract<BrokherConfig, BrokherChannel> {
   publish (topic: string, content: Object) : Boolean
 
   subscribe(topicName: string, callback: Function) : any
+
 }

@@ -4,7 +4,7 @@ export function setup (brokherName: string) {
   const brokher = Object.entries(BrokherMapper).filter(([key]) => key === brokherName)[0][1]
 
   return import(`./contracts/${brokher}`)
-    .then((m) => {
-      return m.default
+    .then(({ default: mod }) => {
+      return mod.init()
     })
 }

@@ -3,15 +3,11 @@ import { setup } from '.'
 let contract: any
 
 beforeEach(async () => {
-  const Contract = await setup('rabbit')
-
-  contract = new Contract()
+  contract = await setup('rabbit')
 })
 
 describe('Brokher', () => {
   test('setup contract', async () => {
-    const contract = await setup('rabbit')
-
     expect(contract).toBeDefined()
   })
 
