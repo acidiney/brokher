@@ -16,7 +16,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const index_1 = __importDefault(require("./index"));
 let contract;
 beforeEach(() => {
-    contract = new index_1.default();
+    contract = index_1.default.init();
 });
 describe('RabbitMQ Contract', () => {
     test('Contract need be defined', () => __awaiter(void 0, void 0, void 0, function* () {

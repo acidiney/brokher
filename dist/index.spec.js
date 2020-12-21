@@ -12,12 +12,10 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const _1 = require(".");
 let contract;
 beforeEach(() => __awaiter(void 0, void 0, void 0, function* () {
-    const Contract = yield _1.setup('rabbit');
-    contract = new Contract();
+    contract = yield _1.setup('rabbit');
 }));
 describe('Brokher', () => {
     test('setup contract', () => __awaiter(void 0, void 0, void 0, function* () {
-        const contract = yield _1.setup('rabbit');
         expect(contract).toBeDefined();
     }));
     test('createConnection need exist', () => __awaiter(void 0, void 0, void 0, function* () {

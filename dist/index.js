@@ -23,8 +23,8 @@ exports.setup = void 0;
 const BrokherMapped_1 = require("./enums/BrokherMapped");
 function setup(brokherName) {
     const brokher = Object.entries(BrokherMapped_1.BrokherMapper).filter(([key]) => key === brokherName)[0][1];
-    return Promise.resolve().then(() => __importStar(require(`./contracts/${brokher}`))).then((m) => {
-        return m.default;
+    return Promise.resolve().then(() => __importStar(require(`./contracts/${brokher}`))).then(({ default: mod }) => {
+        return mod.init();
     });
 }
 exports.setup = setup;

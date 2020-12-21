@@ -8,6 +8,9 @@ class RabbitMQ {
             return this;
         });
     }
+    static init() {
+        return new RabbitMQ();
+    }
     setExchange(exchange) {
         this.exchange = exchange;
         return this;
