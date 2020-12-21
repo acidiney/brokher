@@ -1,4 +1,4 @@
-import { Channel, connect, Connection, Options } from 'amqplib'
+import { connect, Connection, Options } from 'amqplib'
 
 import { BrokherContract } from '../BrokherContract'
 
@@ -6,80 +6,107 @@ interface RabbitMQConfig {
   uri: string
 }
 
+interface RabbitMQExchange {
+  name: string
+  channel: string
+  options: Options.AssertExchange
+}
+
 export default class RabbitMQ
 implements BrokherContract<RabbitMQConfig, Options.AssertExchange> {
-  private channel!: Channel
-  private connection!: Connection
+  private connectionUrl!: string
 
-  private exchange!: string
+  private exchange!: RabbitMQExchange
   private routingKey!: string
 
-  createConnection ({ uri = 'guest:guest@localhost:5672' }) {
-    return connect(`amqp://${uri}`).then((conn) => {
-      this.connection = conn
-
-      return this
-    })
-  }
-
-  static init () {
-    return new RabbitMQ()
-  }
-
-  setExchange (exchange: string) {
-    this.exchange = exchange
+  setConnection ({
+    uri = 'guest:guest@localhost:5672'
+  }: RabbitMQConfig): RabbitMQ {
+    this.connectionUrl = `amqp://${uri}`
 
     return this
   }
 
-  createChannel (channel = 'topic', options: Options.AssertExchange) {
-    return this.connection.createChannel().then((ch) => {
-      console.log('[Brokher] - channel created!')
-
-      ch.assertExchange(this.exchange, channel, options)
-
-      this.channel = ch
-
-      return this
-    })
+  static init (): RabbitMQ {
+    return new RabbitMQ()
   }
 
-  publish (content: Object): Boolean {
-    return this.channel.publish(
-      this.exchange,
+  setExchange (exchange: string): RabbitMQ {
+    this.exchange = {
+      ...this.exchange,
+      name: exchange
+    }
+
+    return this
+  }
+
+  setChannel (channel = 'topic', options: Options.AssertExchange): RabbitMQ {
+    this.exchange = {
+      ...this.exchange,
+      channel,
+      options
+    }
+
+    return this
+  }
+
+  async createChannel () {
+    const connection = await this.createConnection()
+    const ch = await connection.createChannel()
+
+    console.log('[Brokher] - channel created!')
+    ch.assertExchange(
+      this.exchange.name,
+      this.exchange.channel,
+      this.exchange.options
+    )
+    return ch
+  }
+
+  private createConnection (): Promise<Connection> {
+    return connect(this.connectionUrl)
+  }
+
+  async publish (content: Object): Promise<Boolean> {
+    const ch = await this.createChannel()
+
+    return ch.publish(
+      this.exchange.name,
       this.routingKey,
       Buffer.from(JSON.stringify(content))
     )
   }
 
-  subscribe (listingKey: string, callback: Function) {
-    return this.channel
-      .assertQueue('', { exclusive: true })
-      .then(({ queue }) => {
-        console.log(
-          '[Brokher] Waiting for bindings on %s. To exit press CTRL+C',
-          queue
-        )
+  async subscribe (listingKey: string, callback: Function) {
+    const ch = await this.createChannel()
 
-        const routingKey = `#.${listingKey}.#`
+    return ch.assertQueue('', { exclusive: true }).then(({ queue }) => {
+      console.log(
+        '[Brokher] Waiting for bindings on %s. To exit press CTRL+C',
+        queue
+      )
 
-        this.channel.bindQueue(queue, this.exchange, routingKey)
+      const routingKey = `#.${listingKey}.#`
 
-        console.log(' [x] Binded %s', routingKey)
+      ch.bindQueue(queue, this.exchange.name, routingKey)
 
-        return this.channel.consume(queue, (message) => {
-          try {
-            const receivedData = JSON.parse(message?.content.toString() as string)
+      console.log(' [x] Binded %s', routingKey)
 
-            callback(receivedData)
-          } catch (e) {
-            console.log(e)
-          }
-        })
+      return ch.consume(queue, (message: any) => {
+        try {
+          const receivedData = JSON.parse(message?.content.toString() as string)
+
+          callback(receivedData)
+        } catch (e) {
+          console.log(e)
+        }
       })
+    })
   }
 
-  setRoutingKey (key: string): void {
+  setRoutingKey (key: string): RabbitMQ {
     this.routingKey = `${this.exchange}.${key}`
+
+    return this
   }
 }

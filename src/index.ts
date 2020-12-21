@@ -1,4 +1,4 @@
-import { BrokherContract } from './contracts/BrokherContract';
+import { BrokherContract } from './contracts/BrokherContract'
 import { BrokherMapper } from './enums/BrokherMapped'
 interface BrokherInterface extends BrokherContract<any, any> {
   init() : BrokherInterface

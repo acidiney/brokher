@@ -1,10 +1,12 @@
 export interface BrokherContract<BrokherConfig, BrokherChannel> {
 
-  createConnection(config: BrokherConfig) : any
+  setConnection(config: BrokherConfig) : any
 
-  createChannel (channel: string, options: BrokherChannel) : any
+  setChannel (channel: string, options: BrokherChannel) : any
 
-  publish (topic: string, content: Object) : Boolean
+  createChannel (connection: any) : any
+
+  publish (topic: string, content: Object) : Promise<Boolean>
 
   subscribe(topicName: string, callback: Function) : any
 

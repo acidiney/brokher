@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 import { setup } from '.'
 
 let contract: any
@@ -12,7 +13,7 @@ describe('Brokher', () => {
   })
 
   test('createConnection need exist', async () => {
-    expect(contract.createConnection).toBeDefined()
+    expect(contract.setConnection).toBeDefined()
   })
   test('setExchange need exist', async () => {
     expect(contract.setExchange).toBeDefined()
@@ -25,5 +26,16 @@ describe('Brokher', () => {
   })
   test('subscribe need exist', async () => {
     expect(contract.subscribe).toBeDefined()
+  })
+
+  test('test chain pattern', async () => {
+    expect(
+      await contract
+        .setConnection({ uri: 'guest:guest@localhost:5672' })
+        .setExchange('logs')
+        .setChannel('topic', { durable: false })
+        .setRoutingKey('normal')
+        .publish({ message: 'ok' })
+    ).toBeTruthy()
   })
 })
