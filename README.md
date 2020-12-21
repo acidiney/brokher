@@ -61,13 +61,16 @@ Brokher implements the same contract to every supported Broker, so the principal
 
 ## Methods
 
-#### setConnection
-#### setExchange
-#### setChannel
-#### setChannel
-#### setRoutingKey
-#### publish
-#### subscribe
+Only `subscribe` and `publish` returns `Promise`. The Brokher methods follow chain pattern and builder pattern, so you can use as you like
+
+#### setConnection (BrokherConnectionContract) : Brokher
+#### setExchange (BrokherExchange): Brokher
+If you use some brokher that is not Exchange Basead, it's Okay, will me ignorated
+#### setChannel (channelName, ChannelOptionsObject) : Brokher
+#### setRoutingKey (routingKeyName): Brokher
+#### publish (messageObject): Promise<boolean>
+#### subscribe (listingKey, callBackFunction)
+The subscribe method receive key that they will listing and callbackFunction that will be trigger when message was received
 
 
 ## Support
