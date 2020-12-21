@@ -9,6 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+/* eslint-disable no-undef */
 const _1 = require(".");
 let contract;
 beforeEach(() => __awaiter(void 0, void 0, void 0, function* () {
@@ -19,7 +20,7 @@ describe('Brokher', () => {
         expect(contract).toBeDefined();
     }));
     test('createConnection need exist', () => __awaiter(void 0, void 0, void 0, function* () {
-        expect(contract.createConnection).toBeDefined();
+        expect(contract.setConnection).toBeDefined();
     }));
     test('setExchange need exist', () => __awaiter(void 0, void 0, void 0, function* () {
         expect(contract.setExchange).toBeDefined();
@@ -32,5 +33,13 @@ describe('Brokher', () => {
     }));
     test('subscribe need exist', () => __awaiter(void 0, void 0, void 0, function* () {
         expect(contract.subscribe).toBeDefined();
+    }));
+    test('test chain pattern', () => __awaiter(void 0, void 0, void 0, function* () {
+        expect(yield contract
+            .setConnection({ uri: 'guest:guest@localhost:5672' })
+            .setExchange('logs')
+            .setChannel('topic', { durable: false })
+            .setRoutingKey('normal')
+            .publish({ message: 'ok' })).toBeTruthy();
     }));
 });
