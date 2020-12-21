@@ -100,7 +100,11 @@ implements BrokherContract<RabbitMQConfig, Options.AssertExchange> {
         } catch (e) {
           console.log(e)
         }
-      })
+      }
+      /** {
+          noAck: true
+        } */
+      )
     })
   }
 
