@@ -74,6 +74,15 @@ Brokher implements the same contract to every supported Broker, so the principal
 
 - [X] RabbitMQ
 - [ ] Apache Kafka
+- [ ] Redis
+- [ ] Amazon SNS
+- [ ] Amazon sqs
+- [ ] IBM MQ
+- [ ] Microsoft BizTalk
+- [ ] Mule ESB
+- [ ] Google Cloud Pub/Sub
+...
+
 
 #### Author
 Acidiney Dias
