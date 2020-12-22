@@ -19,7 +19,7 @@ $ yarn add brokher
 ### Usage
 After install **Brokher** you need to install your base Brokher lib, in this example I will use RabbitMQ with `amqlib`, so install this lib with
 ```bash
-$ npm install amqlib
+$ npm install amqplib
 
 ```
 
