@@ -1,5 +1,5 @@
 # Brokher
-Brokher is a simple ORM to manage message brokers in your applications.
+Brokher is a simple adapter to manage message brokers in your applications.
 
 ## Motivation
 
