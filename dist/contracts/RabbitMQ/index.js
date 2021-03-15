@@ -61,7 +61,11 @@ class RabbitMQ {
                     catch (e) {
                         console.log(e);
                     }
-                });
+                }
+                /** {
+                    noAck: true
+                  } */
+                );
             });
         });
     }
