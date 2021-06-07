@@ -46,8 +46,8 @@ async function main () {
    await brokher
     .setConnection({ uri: 'rabbitmq_credentials' })
     .setExchange('logs')
+    .setQueue('logs-normal')
     .setChannel('topic', { durable: false })
-    .setRoutingKey('normal')
     .subscribe('normal', (message) => {
        console.log(message);
     })
