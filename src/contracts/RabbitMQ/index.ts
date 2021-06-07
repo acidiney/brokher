@@ -110,8 +110,7 @@ export default class RabbitMQ
       autoDelete: false,
       messageTtl: 60000,
       deadLetterExchange: 'webhook',
-      deadLetterRoutingKey: '#.dead.#',
-      expires: 60000,
+      deadLetterRoutingKey: '#.dead.#'
     }
   ) {
     const ch = await this.createChannel();

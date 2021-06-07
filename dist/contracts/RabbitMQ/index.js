@@ -66,7 +66,7 @@ class RabbitMQ {
         deadLetterExchange: 'webhook',
         deadLetterRoutingKey: '#.dead.#',
         expires: 60000,
-    }, consumeOptions) {
+    }) {
         return __awaiter(this, void 0, void 0, function* () {
             const ch = yield this.createChannel();
             try {
