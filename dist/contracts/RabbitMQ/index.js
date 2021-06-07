@@ -11,7 +11,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const amqplib_1 = require("amqplib");
 class RabbitMQ {
-    setConnection({ uri = 'guest:guest@localhost:5672' }) {
+    setConnection({ uri = 'guest:guest@localhost:5672', }) {
         this.connectionUrl = `amqp://${uri}`;
         return this;
     }
@@ -22,6 +22,10 @@ class RabbitMQ {
         this.exchange = Object.assign(Object.assign({}, this.exchange), { name: exchange });
         return this;
     }
+    setQueue(queue) {
+        this.queue = queue;
+        return this;
+    }
     setChannel(channel = 'topic', options) {
         this.exchange = Object.assign(Object.assign({}, this.exchange), { channel,
             options });
@@ -29,15 +33,21 @@ class RabbitMQ {
     }
     createChannel() {
         return __awaiter(this, void 0, void 0, function* () {
-            const connection = yield this.createConnection();
-            const ch = yield connection.createChannel();
-            console.log('[Brokher] - channel created!');
-            ch.assertExchange(this.exchange.name, this.exchange.channel, this.exchange.options);
-            return ch;
+            if (!this.ch) {
+                this.ch = yield (yield this.createConnection()).createChannel();
+                console.log('[Brokher] - channel created!');
+                this.ch.assertExchange(this.exchange.name, this.exchange.channel, this.exchange.options);
+            }
+            return this.ch;
         });
     }
     createConnection() {
-        return amqplib_1.connect(this.connectionUrl);
+        return __awaiter(this, void 0, void 0, function* () {
+            if (!this.conn) {
+                this.conn = yield amqplib_1.connect(this.connectionUrl);
+            }
+            return this.conn;
+        });
     }
     publish(content) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -45,28 +55,40 @@ class RabbitMQ {
             return ch.publish(this.exchange.name, this.routingKey, Buffer.from(JSON.stringify(content)));
         });
     }
-    subscribe(listingKey, callback) {
+    subscribe(listingKey, callback, options = {
+        durable: true,
+        exclusive: false,
+        autoDelete: false,
+        messageTtl: 60000,
+        deadLetterExchange: 'webhook',
+        deadLetterRoutingKey: '#.dead.#',
+        expires: 60000,
+    }) {
         return __awaiter(this, void 0, void 0, function* () {
             const ch = yield this.createChannel();
-            return ch.assertQueue('', { exclusive: true }).then(({ queue }) => {
+            try {
+                const { queue } = yield ch.assertQueue(this.queue || '', options);
                 console.log('[Brokher] Waiting for bindings on %s. To exit press CTRL+C', queue);
                 const routingKey = `#.${listingKey}.#`;
                 ch.bindQueue(queue, this.exchange.name, routingKey);
                 console.log(' [x] Binded %s', routingKey);
-                return ch.consume(queue, (message) => {
+                yield ch.consume(queue, (message) => __awaiter(this, void 0, void 0, function* () {
+                    let receivedData;
                     try {
-                        const receivedData = JSON.parse(message === null || message === void 0 ? void 0 : message.content.toString());
-                        callback(receivedData);
+                        receivedData = JSON.parse(message === null || message === void 0 ? void 0 : message.content.toString());
                     }
-                    catch (e) {
-                        console.log(e);
+                    catch (_a) {
+                        receivedData = message === null || message === void 0 ? void 0 : message.content.toString();
                     }
-                }
-                /** {
-                    noAck: true
-                  } */
-                );
-            });
+                    yield callback(receivedData);
+                    this.ch.ack(message);
+                }), {
+                    noAck: false,
+                });
+            }
+            catch (e) {
+                console.error(e);
+            }
         });
     }
     setRoutingKey(key) {
