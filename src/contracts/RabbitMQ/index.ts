@@ -87,13 +87,17 @@ export default class RabbitMQ
     return this.conn;
   }
 
-  async publish(content: Object): Promise<Boolean> {
+  async publish(content: Object, options: Options.Publish = {
+    deliveryMode: 2,
+    persistent: true
+  }): Promise<Boolean> {
     const ch = await this.createChannel();
 
     return ch.publish(
       this.exchange.name,
       this.routingKey,
-      Buffer.from(JSON.stringify(content))
+      Buffer.from(JSON.stringify(content)),
+      options,
     );
   }
 
@@ -108,7 +112,8 @@ export default class RabbitMQ
       deadLetterExchange: 'webhook',
       deadLetterRoutingKey: '#.dead.#',
       expires: 60000,
-    }
+    },
+    consumeOptions: Options.Consume
   ) {
     const ch = await this.createChannel();
     try {
