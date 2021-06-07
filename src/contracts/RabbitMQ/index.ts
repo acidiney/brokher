@@ -1,116 +1,152 @@
-import { connect, Connection, Options } from 'amqplib'
+import { Channel, connect, Connection, Options } from 'amqplib';
 
-import { BrokherContract } from '../BrokherContract'
+import { BrokherContract } from '../BrokherContract';
 
 interface RabbitMQConfig {
-  uri: string
+  uri: string;
 }
 
 interface RabbitMQExchange {
-  name: string
-  channel: string
-  options: Options.AssertExchange
+  name: string;
+  channel: string;
+  options: Options.AssertExchange;
 }
 
 export default class RabbitMQ
-implements BrokherContract<RabbitMQConfig, Options.AssertExchange> {
-  private connectionUrl!: string
+  implements
+    BrokherContract<
+      RabbitMQConfig,
+      Options.AssertExchange,
+      Options.AssertQueue
+    >
+{
+  private connectionUrl!: string;
 
-  private exchange!: RabbitMQExchange
-  private routingKey!: string
+  private exchange!: RabbitMQExchange;
+  private routingKey!: string;
+  private ch!: Channel;
+  private conn!: Connection;
+  private queue!: string;
 
-  setConnection ({
-    uri = 'guest:guest@localhost:5672'
+  setConnection({
+    uri = 'guest:guest@localhost:5672',
   }: RabbitMQConfig): RabbitMQ {
-    this.connectionUrl = `amqp://${uri}`
+    this.connectionUrl = `amqp://${uri}`;
 
-    return this
+    return this;
   }
 
-  static init (): RabbitMQ {
-    return new RabbitMQ()
+  static init(): RabbitMQ {
+    return new RabbitMQ();
   }
 
-  setExchange (exchange: string): RabbitMQ {
+  setExchange(exchange: string): RabbitMQ {
     this.exchange = {
       ...this.exchange,
-      name: exchange
-    }
+      name: exchange,
+    };
 
-    return this
+    return this;
   }
 
-  setChannel (channel = 'topic', options: Options.AssertExchange): RabbitMQ {
+  setQueue(queue: string): RabbitMQ {
+    this.queue = queue;
+    return this;
+  }
+
+  setChannel(channel = 'topic', options: Options.AssertExchange): RabbitMQ {
     this.exchange = {
       ...this.exchange,
       channel,
-      options
+      options,
+    };
+
+    return this;
+  }
+
+  async createChannel() {
+    if (!this.ch) {
+      this.ch = await (await this.createConnection()).createChannel();
+
+      console.log('[Brokher] - channel created!');
+      this.ch.assertExchange(
+        this.exchange.name,
+        this.exchange.channel,
+        this.exchange.options
+      );
     }
 
-    return this
+    return this.ch;
   }
 
-  async createChannel () {
-    const connection = await this.createConnection()
-    const ch = await connection.createChannel()
+  private async createConnection(): Promise<Connection> {
+    if (!this.conn) {
+      this.conn = await connect(this.connectionUrl);
+    }
 
-    console.log('[Brokher] - channel created!')
-    ch.assertExchange(
-      this.exchange.name,
-      this.exchange.channel,
-      this.exchange.options
-    )
-    return ch
+    return this.conn;
   }
 
-  private createConnection (): Promise<Connection> {
-    return connect(this.connectionUrl)
-  }
-
-  async publish (content: Object): Promise<Boolean> {
-    const ch = await this.createChannel()
+  async publish(content: Object): Promise<Boolean> {
+    const ch = await this.createChannel();
 
     return ch.publish(
       this.exchange.name,
       this.routingKey,
       Buffer.from(JSON.stringify(content))
-    )
+    );
   }
 
-  async subscribe (listingKey: string, callback: Function) {
-    const ch = await this.createChannel()
+  async subscribe(
+    listingKey: string,
+    callback: Function,
+    options: Options.AssertQueue = {
+      durable: true,
+      exclusive: true,
+      autoDelete: false,
+      messageTtl: 60000,
+      deadLetterExchange: 'webhook',
+      deadLetterRoutingKey: '#.dead.#',
+      expires: 60000,
+    }
+  ) {
+    const ch = await this.createChannel();
+    try {
+      const { queue } = await ch.assertQueue(this.queue || '', options);
 
-    return ch.assertQueue('', { exclusive: true }).then(({ queue }) => {
       console.log(
         '[Brokher] Waiting for bindings on %s. To exit press CTRL+C',
         queue
-      )
+      );
 
-      const routingKey = `#.${listingKey}.#`
+      const routingKey = `#.${listingKey}.#`;
 
-      ch.bindQueue(queue, this.exchange.name, routingKey)
+      ch.bindQueue(queue, this.exchange.name, routingKey);
 
-      console.log(' [x] Binded %s', routingKey)
+      console.log(' [x] Binded %s', routingKey);
 
-      return ch.consume(queue, (message: any) => {
-        try {
-          const receivedData = JSON.parse(message?.content.toString() as string)
+      await ch.consume(
+        queue,
+        async (message: any) => {
+          const receivedData = JSON.parse(
+            message?.content.toString() as string
+          );
 
-          callback(receivedData)
-        } catch (e) {
-          console.log(e)
+          await callback(receivedData);
+          this.ch.ack(message);
+        },
+        {
+          noAck: false,
         }
-      }
-      /** {
-          noAck: true
-        } */
-      )
-    })
+      );
+    } catch (e) {
+      console.log(e);
+    }
   }
 
-  setRoutingKey (key: string): RabbitMQ {
-    this.routingKey = `${this.exchange}.${key}`
+  setRoutingKey(key: string): RabbitMQ {
+    this.routingKey = `${this.exchange}.${key}`;
 
-    return this
+    return this;
   }
 }
