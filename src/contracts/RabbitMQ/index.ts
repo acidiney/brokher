@@ -102,7 +102,7 @@ export default class RabbitMQ
     callback: Function,
     options: Options.AssertQueue = {
       durable: true,
-      exclusive: true,
+      exclusive: false,
       autoDelete: false,
       messageTtl: 60000,
       deadLetterExchange: 'webhook',
@@ -128,9 +128,15 @@ export default class RabbitMQ
       await ch.consume(
         queue,
         async (message: any) => {
-          const receivedData = JSON.parse(
-            message?.content.toString() as string
-          );
+          let receivedData;
+
+          try {
+            receivedData = JSON.parse(
+              message?.content.toString() as string
+            );
+          } catch {
+            receivedData = message?.content.toString() as string;
+          }
 
           await callback(receivedData);
           this.ch.ack(message);
@@ -140,7 +146,7 @@ export default class RabbitMQ
         }
       );
     } catch (e) {
-      console.log(e);
+      console.error(e);
     }
   }
 

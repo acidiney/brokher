@@ -1,20 +1,24 @@
-import { Options } from 'amqplib';
+import { Channel, Options } from 'amqplib';
 import { BrokherContract } from '../BrokherContract';
 interface RabbitMQConfig {
     uri: string;
 }
-export default class RabbitMQ implements BrokherContract<RabbitMQConfig, Options.AssertExchange> {
+export default class RabbitMQ implements BrokherContract<RabbitMQConfig, Options.AssertExchange, Options.AssertQueue> {
     private connectionUrl;
     private exchange;
     private routingKey;
-    setConnection({ uri }: RabbitMQConfig): RabbitMQ;
+    private ch;
+    private conn;
+    private queue;
+    setConnection({ uri, }: RabbitMQConfig): RabbitMQ;
     static init(): RabbitMQ;
     setExchange(exchange: string): RabbitMQ;
+    setQueue(queue: string): RabbitMQ;
     setChannel(channel: string | undefined, options: Options.AssertExchange): RabbitMQ;
-    createChannel(): Promise<import("amqplib").Channel>;
+    createChannel(): Promise<Channel>;
     private createConnection;
     publish(content: Object): Promise<Boolean>;
-    subscribe(listingKey: string, callback: Function): Promise<import("amqplib").Replies.Consume>;
+    subscribe(listingKey: string, callback: Function, options?: Options.AssertQueue): Promise<void>;
     setRoutingKey(key: string): RabbitMQ;
 }
 export {};

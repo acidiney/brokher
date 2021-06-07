@@ -10,4 +10,5 @@ export interface BrokherContract<BrokherConfig, BrokherChannel, BrokherOptions> 
 
   subscribe(topicName: string, callback: Function, options: BrokherOptions) : any
 
+  setQueue(queue: string) : any
 }
