@@ -49,10 +49,13 @@ class RabbitMQ {
             return this.conn;
         });
     }
-    publish(content) {
+    publish(content, options = {
+        deliveryMode: 2,
+        persistent: true
+    }) {
         return __awaiter(this, void 0, void 0, function* () {
             const ch = yield this.createChannel();
-            return ch.publish(this.exchange.name, this.routingKey, Buffer.from(JSON.stringify(content)));
+            return ch.publish(this.exchange.name, this.routingKey, Buffer.from(JSON.stringify(content)), options);
         });
     }
     subscribe(listingKey, callback, options = {
@@ -63,7 +66,7 @@ class RabbitMQ {
         deadLetterExchange: 'webhook',
         deadLetterRoutingKey: '#.dead.#',
         expires: 60000,
-    }) {
+    }, consumeOptions) {
         return __awaiter(this, void 0, void 0, function* () {
             const ch = yield this.createChannel();
             try {

@@ -17,8 +17,8 @@ export default class RabbitMQ implements BrokherContract<RabbitMQConfig, Options
     setChannel(channel: string | undefined, options: Options.AssertExchange): RabbitMQ;
     createChannel(): Promise<Channel>;
     private createConnection;
-    publish(content: Object): Promise<Boolean>;
-    subscribe(listingKey: string, callback: Function, options?: Options.AssertQueue): Promise<void>;
+    publish(content: Object, options?: Options.Publish): Promise<Boolean>;
+    subscribe(listingKey: string, callback: Function, options: Options.AssertQueue | undefined, consumeOptions: Options.Consume): Promise<void>;
     setRoutingKey(key: string): RabbitMQ;
 }
 export {};

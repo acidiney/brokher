@@ -112,8 +112,7 @@ export default class RabbitMQ
       deadLetterExchange: 'webhook',
       deadLetterRoutingKey: '#.dead.#',
       expires: 60000,
-    },
-    consumeOptions: Options.Consume
+    }
   ) {
     const ch = await this.createChannel();
     try {
