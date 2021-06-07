@@ -64,8 +64,7 @@ class RabbitMQ {
         autoDelete: false,
         messageTtl: 60000,
         deadLetterExchange: 'webhook',
-        deadLetterRoutingKey: '#.dead.#',
-        expires: 60000,
+        deadLetterRoutingKey: '#.dead.#'
     }) {
         return __awaiter(this, void 0, void 0, function* () {
             const ch = yield this.createChannel();
