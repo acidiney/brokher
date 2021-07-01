@@ -55,7 +55,7 @@ class RabbitMQ {
     }) {
         return __awaiter(this, void 0, void 0, function* () {
             const ch = yield this.createChannel();
-            return ch.publish(this.exchange.name, this.routingKey, Buffer.from(JSON.stringify(content)), options);
+            return ch.publish(this.exchange.name, this.routingKey, Buffer.from(JSON.stringify(content), 'utf-8'), options);
         });
     }
     subscribe(listingKey, callback, options = {

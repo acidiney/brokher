@@ -96,7 +96,7 @@ export default class RabbitMQ
     return ch.publish(
       this.exchange.name,
       this.routingKey,
-      Buffer.from(JSON.stringify(content)),
+      Buffer.from(JSON.stringify(content), 'utf-8'),
       options,
     );
   }
