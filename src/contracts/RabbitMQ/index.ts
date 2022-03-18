@@ -1,103 +1,122 @@
-import { Channel, connect, Connection, Options } from 'amqplib';
+import { Channel, connect, Connection, Options } from 'amqplib'
 
-import { BrokherContract } from '../BrokherContract';
+import { BrokherContract } from '../BrokherContract'
 
 interface RabbitMQConfig {
-  uri: string;
+  uri: string
 }
 
 interface RabbitMQExchange {
-  name: string;
-  channel: string;
-  options: Options.AssertExchange;
+  name: string
+  channel: string
+  options: Options.AssertExchange
 }
 
 export default class RabbitMQ
-  implements
+implements
     BrokherContract<
-      RabbitMQConfig,
-      Options.AssertExchange,
-      Options.AssertQueue
-    >
-{
-  private connectionUrl!: string;
+    RabbitMQConfig,
+    Options.AssertExchange,
+    Options.AssertQueue
+    > {
+  private connectionUrl: string = ''
 
-  private exchange!: RabbitMQExchange;
-  private routingKey!: string;
-  private ch!: Channel;
-  private conn!: Connection;
-  private queue!: string;
+  private exchange?: RabbitMQExchange
+  private routingKey?: string
+  private ch?: Channel
+  private conn?: Connection
+  private queue?: string
 
-  setConnection({
-    uri = 'guest:guest@localhost:5672',
+  setConnection ({
+    uri = 'guest:guest@localhost:5672'
   }: RabbitMQConfig): RabbitMQ {
-    this.connectionUrl = `amqp://${uri}`;
+    this.connectionUrl = `amqp://${uri}`
 
-    return this;
+    return this
   }
 
-  static init(): RabbitMQ {
-    return new RabbitMQ();
+  get exchangeName (): string | undefined {
+    return this.exchange?.name
   }
 
-  setExchange(exchange: string): RabbitMQ {
+  private static setPrefix (text: string): string {
+    const prefix = process.env.BROKHER_PREFIX
+    if (!prefix) return text
+
+    return `${prefix}_${text}`
+  }
+
+  static init (): RabbitMQ {
+    return new RabbitMQ()
+  }
+
+  setExchange (exchange: string): RabbitMQ {
     this.exchange = {
       ...this.exchange,
-      name: exchange,
-    };
+      name: RabbitMQ.setPrefix(exchange)
+    } as RabbitMQExchange
 
-    return this;
+    return this
   }
 
-  setQueue(queue: string): RabbitMQ {
-    this.queue = queue;
-    return this;
+  setQueue (queue: string): RabbitMQ {
+    this.queue = queue
+    return this
   }
 
-  setChannel(channel = 'topic', options: Options.AssertExchange): RabbitMQ {
+  setChannel (channel = 'topic', options: Options.AssertExchange): RabbitMQ {
     this.exchange = {
       ...this.exchange,
       channel,
-      options,
-    };
+      options
+    } as RabbitMQExchange
 
-    return this;
+    return this
   }
 
-  async createChannel() {
+  private static logging (text: string, ...options: any): void {
+    console.log(`[Brokher] (${(new Date()).toLocaleDateString()}) -`, text, ...options)
+  }
+
+  async createChannel (): Promise<Channel> {
     if (!this.ch) {
-      this.ch = await (await this.createConnection()).createChannel();
+      this.ch = await (await this.createConnection()).createChannel()
 
-      console.log('[Brokher] - channel created!');
-      this.ch.assertExchange(
-        this.exchange.name,
-        this.exchange.channel,
-        this.exchange.options
-      );
+      RabbitMQ.logging('channel created!')
+
+      if (this.exchange) {
+        await this.ch.assertExchange(
+          this.exchange.name,
+          this.exchange.channel,
+          this.exchange.options
+        )
+      }
     }
 
-    return this.ch;
+    return this.ch
   }
 
-  private async createConnection(): Promise<Connection> {
+  private async createConnection (): Promise<Connection> {
     if (!this.conn) {
-      this.conn = await connect(this.connectionUrl);
+      this.conn = await connect(this.connectionUrl)
     }
 
-    return this.conn;
+    return this.conn
   }
 
-  async publish(content: Object): Promise<Boolean> {
-    const ch = await this.createChannel();
+  async publish (content: Object): Promise<Boolean> {
+    const ch = await this.createChannel()
+
+    if (!this.exchange || !this.routingKey) return false
 
     return ch.publish(
       this.exchange.name,
       this.routingKey,
       Buffer.from(JSON.stringify(content))
-    );
+    )
   }
 
-  async subscribe(
+  async subscribe (
     listingKey: string,
     callback: Function,
     options: Options.AssertQueue = {
@@ -107,52 +126,56 @@ export default class RabbitMQ
       messageTtl: 60000,
       deadLetterExchange: 'webhook',
       deadLetterRoutingKey: '#.dead.#',
-      expires: 60000,
+      expires: 60000
     }
   ) {
-    const ch = await this.createChannel();
+    const ch = await this.createChannel()
     try {
-      const { queue } = await ch.assertQueue(this.queue || '', options);
+      const { queue } = await ch.assertQueue(this.queue ?? '', options)
 
-      console.log(
-        '[Brokher] Waiting for bindings on %s. To exit press CTRL+C',
-        queue
-      );
+      RabbitMQ.logging('Waiting for bindings on %s. To exit press CTRL+C', queue)
 
-      const routingKey = `#.${listingKey}.#`;
+      const routingKey = `#.${listingKey}.#`
 
-      ch.bindQueue(queue, this.exchange.name, routingKey);
+      if (this.exchange) {
+        await ch.bindQueue(queue, this.exchange.name, routingKey)
 
-      console.log(' [x] Binded %s', routingKey);
+        RabbitMQ.logging(`Binding ${routingKey}`)
 
-      await ch.consume(
-        queue,
-        async (message: any) => {
-          let receivedData;
+        await ch.consume(
+          queue,
+          async (message: any) => {
+            let receivedData
 
-          try {
-            receivedData = JSON.parse(
-              message?.content.toString() as string
-            );
-          } catch {
-            receivedData = message?.content.toString() as string;
+            try {
+              receivedData = JSON.parse(
+                message?.content.toString() as string
+              )
+            } catch {
+              receivedData = message?.content.toString() as string
+            }
+
+            await callback(receivedData)
+
+            if (this.ch) {
+              this.ch.ack(message)
+            }
+          },
+          {
+            noAck: false
           }
-
-          await callback(receivedData);
-          this.ch.ack(message);
-        },
-        {
-          noAck: false,
-        }
-      );
+        )
+      }
     } catch (e) {
-      console.error(e);
+      console.error(e)
     }
   }
 
-  setRoutingKey(key: string): RabbitMQ {
-    this.routingKey = `${this.exchange}.${key}`;
+  setRoutingKey (key: string): RabbitMQ {
+    if (this.exchange) {
+      this.routingKey = `${this.exchange.name}.${key}`
+    }
 
-    return this;
+    return this
   }
 }
