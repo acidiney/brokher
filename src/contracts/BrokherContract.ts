@@ -8,7 +8,7 @@ export interface BrokherContract<BrokherConfig, BrokherChannel, BrokherOptions> 
 
   publish: (topic: string, content: Object) => Promise<Boolean>
 
-  subscribe: (topicName: string, callback: Function, options: BrokherOptions) => any
+  subscribe: (topicName: string, callback: (msg: object, ch: any) => Promise<void>, options: BrokherOptions) => any
 
   setQueue: (queue: string) => any
 }

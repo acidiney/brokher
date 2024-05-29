@@ -121,7 +121,7 @@ implements
 
   async subscribe (
     listingKey: string,
-    callback: (msg: object, ch: { ack: () => Promise<void>, nack: () => Promise<void> }) => Promise<void>,
+    callback: (msg: object, ch: Channel) => Promise<void>,
     options: Options.AssertQueue = {
       durable: true,
       exclusive: false,
@@ -158,7 +158,9 @@ implements
               receivedData = message?.content.toString() as string
             }
 
-            await callback(receivedData, this.ch)
+            if (this.ch) {
+              await callback(receivedData, this.ch)
+            }
           },
           {
             noAck: false
