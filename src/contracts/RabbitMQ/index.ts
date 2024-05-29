@@ -112,21 +112,24 @@ implements
     return ch.publish(
       this.exchange.name,
       this.routingKey,
-      Buffer.from(JSON.stringify(content))
+      Buffer.from(JSON.stringify(content)),
+      {
+        persistent: true,
+      }
     )
   }
 
   async subscribe (
     listingKey: string,
-    callback: Function,
+    callback: (msg: object, ch: { ack: () => Promise<void>, nack: () => Promise<void> }) => Promise<void>,
     options: Options.AssertQueue = {
       durable: true,
       exclusive: false,
       autoDelete: false,
-      messageTtl: 60000,
+      messageTtl: 60_000_000,
       deadLetterExchange: 'webhook',
       deadLetterRoutingKey: '#.dead.#',
-      expires: 60000
+      expires: 60_000_000
     }
   ) {
     const ch = await this.createChannel()
@@ -155,11 +158,7 @@ implements
               receivedData = message?.content.toString() as string
             }
 
-            await callback(receivedData)
-
-            if (this.ch) {
-              this.ch.ack(message)
-            }
+            await callback(receivedData, this.ch)
           },
           {
             noAck: false
